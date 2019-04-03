@@ -27,7 +27,8 @@ List_t * th_list;
 pthread_t th;
 int phase;
 Game * game;
-pthread_mutex_t mut;
+pthread_mutex_t mut;//pour que le nombre de joueurs ne change pas pdt l'envoi de l'update
+
 typedef struct randCoords{
     double x;
     double y;
@@ -57,29 +58,29 @@ void messageStart(void * args)
     {
          fprintf(stderr,"Server: send() failed: error %d\n", WSAGetLastError());
     }
-    else
-         printf("Server: send() is OK in GAME START.\n");
 }
 
 void sendUpdates(void* args)
 {
     srand(time(NULL));
+
+    char xstr[10];
+    char ystr[10];
+    char scorestr[10];
+    char x[5];
+    char y[5];
+    char s[5];
+    char Buffer[128];
+    int j,retval1,retval;
+    int tmpcpt, cpt, i, l, cptScore;
+    double xnum, ynum;
+    int snum;
     while(1){
         pthread_mutex_lock(&mut);
         char scores[((2*game->nbPlayers)+1)*24];
         memset(scores, '_', sizeof(scores));
-        char xstr[10];
-        memset(xstr, '\0', sizeof(xstr));
-        char ystr[10];
-        memset(ystr, '\0', sizeof(ystr));
-        char scorestr[10];
-        memset(scorestr, '\0', sizeof(scorestr));
-        int tmpcpt;
-        double xnum, ynum;
-        int snum;
-        int cpt = 0;
-        int j,retval1,retval;
-        char Buffer[128];
+
+        cpt = 0;
         scores[0] = 'U';
         scores[1] = 'P';
         scores[2] = 'D';
@@ -90,26 +91,23 @@ void sendUpdates(void* args)
         char nbPlay[(int)floor(log10((double)game->nbPlayers))+1];
         memset(nbPlay, '_', sizeof(nbPlay));
         sprintf(nbPlay, "%d", game->nbPlayers);
-        int i;
-        int l=0;
+        l=0;
         while(l<sizeof(nbPlay))
         {
             scores[7+l]=nbPlay[l];
             l++;
         }
         scores[7+l] = '/';
-
-        char x[5];
-        memset(x, '\0', sizeof(x));
-        char y[5];
-        memset(y, '\0', sizeof(y));
-        char s[5];
-        memset(s, '\0', sizeof(s));
-        int cptScore;
         if(game->players != NULL){
             i=1;
             Player * tmpPlayer = game->players;
             while(tmpPlayer != NULL){
+                memset(xstr, '\0', sizeof(xstr));
+                memset(ystr, '\0', sizeof(ystr));
+                memset(scorestr, '\0', sizeof(scorestr));
+                memset(x, '\0', sizeof(x));
+                memset(y, '\0', sizeof(y));
+                memset(s, '\0', sizeof(s));
                 j=0;
                 while(tmpPlayer->name[j]!='/')
                 {
@@ -126,10 +124,8 @@ void sendUpdates(void* args)
                 for(int k=0; k<sizeof(s);k++)
                 {
                     scores[((game->nbPlayers)*24)+(i*24)+cptScore] = s[k];
-
                     cptScore++;
                 }
-                printf("SCORES : %s\n", s);
                 for(int k=0; k<sizeof(x);k++)
                 {
                     scores[(i*24)+j] = x[k];
@@ -152,19 +148,14 @@ void sendUpdates(void* args)
         if(game->players != NULL){
             Player * tmp = game->players;
             while(tmp != NULL){
-                printf("sending : %s\n", scores);
+                printf("SENDING UPDATE : %s\n", scores);
                 retval1 = send(tmp->sock, scores, sizeof(scores), 0);
                 if (retval1 == SOCKET_ERROR)
                 {
                      fprintf(stderr,"Server: send() failed: error %d\n", WSAGetLastError());
                 }
-                else
-                     printf("Server: send() is OK IN UPDATE.\n");
 
                 memset(Buffer, '\0', sizeof(Buffer));
-                // In the case of SOCK_STREAM, the server can do recv() and send() on
-                // the accepted socket and then close it.
-                // However, for SOCK_DGRAM (UDP), the server will do recvfrom() and sendto()  in a loop.
 
                 retval = recv(tmp->sock, Buffer, sizeof(Buffer), 0);
                 if (retval == SOCKET_ERROR)
@@ -173,7 +164,8 @@ void sendUpdates(void* args)
                     closesocket(tmp->sock);
                 }
                else
-                    printf("Server: recv() is OK IN ECOUTE : %s .\n", Buffer);
+                    printf("RECEIVING UPDATE : %s .\n", Buffer);
+
                 if (retval == 0)
                 {
                     printf("Server: Client closed connection.\n");
@@ -204,10 +196,9 @@ void sendUpdates(void* args)
                     cpt++;
                 }
                 scorestr[cpt - tmpcpt] ='\0';
-                printf("SCOR : %s\n", scorestr);
+
                 snum = atoi(scorestr);
 
-                printf("UPDATE VALUES : %f - %f -%d", xnum, ynum, snum);
                 tmp->x = xnum;
                 tmp->y = ynum;
                 if(snum != tmp->score)
@@ -222,12 +213,9 @@ void sendUpdates(void* args)
                     float yfobj = ((float)rand()/(float)(RAND_MAX))*MAP_SIZE;
                     Objectif * obj = makeObjectif(xfobj,yfobj);
                     game->obj = obj;
-                    printf("OBJECTIF RAND pre\n");
-                    /*sprintf(xobj,"%f", xfobj);
-                    sprintf(yobj,"%f", yfobj);*/
+
                     gcvt(xfobj, 6, xobj);
                     gcvt(yfobj, 6, yobj);
-                    printf("OBJECTIF RAND %s - %s \n", xobj, yobj);
                     newObjMessage[0] = 'O';
                     newObjMessage[1] = 'B';
                     newObjMessage[2] = 'J';
@@ -261,8 +249,6 @@ void sendUpdates(void* args)
                             {
                                  fprintf(stderr,"Server: send() failed: error %d\n", WSAGetLastError());
                             }
-                            else
-                                 printf("Server: send() is OK IN OBJECTIVE %s.\n", newObjMessage);
                             tmp2 = tmp2->next;
                         }
                     }
@@ -288,12 +274,7 @@ void ecoute(void * args)
     int doOnce = 1;
     while(1){
         if(doOnce){
-           //pthread_mutex_lock(&mut);
-            //possibilité d'accepter de nouvelles connexions pendant 20 secs
             memset(Buffer, '\0', sizeof(Buffer));
-            // In the case of SOCK_STREAM, the server can do recv() and send() on
-            // the accepted socket and then close it.
-            // However, for SOCK_DGRAM (UDP), the server will do recvfrom() and sendto()  in a loop.
 
             retval = recv(msgsock, Buffer, sizeof(Buffer), 0);
             if (retval == SOCKET_ERROR)
@@ -302,20 +283,18 @@ void ecoute(void * args)
                 closesocket(msgsock);
             }
            else
-                //printf("Server: recv() is OKIN ECOUTE : %s .\n", Buffer);
             if (retval == 0)
                   {
                 printf("Server: Client closed connection.\n");
                 closesocket(msgsock);
 
             }
-            //pthread_mutex_unlock(&mut);
-            //pour gérer le retour a la ligne en fin d'entree clavier
-            //Buffer[strlen(Buffer) - 1] = '\0';
+
             for(int j = 0; j < sizeof(Buffer) ; j++){
                 if(Buffer[j] == '\n')
                     Buffer[j] = '\0';
             }
+
             int i=0;
             char cmd[24];
             while((i < sizeof(Buffer)) && (Buffer[i] != '/')){
@@ -381,7 +360,6 @@ void ecoute(void * args)
                 pthread_mutex_unlock(&mut);
                 char scores[(game->nbPlayers+1)*24];
                 memset(scores, '_', sizeof(scores));
-                int cpt = 0;
                 int j;
                 scores[0] = 'W';
                 scores[1] = 'E';
@@ -506,112 +484,6 @@ void ecoute(void * args)
                 newObjMessage[l]='/';
                 retval1 = send(msgsock, newObjMessage, sizeof(newObjMessage), 0);
             }
-            //TODO : evaluer le message.
-            if(testUpdate != NULL)
-            {
-                printf("UPDATE : %f", Buffer);
-                /*
-                while((cpt < sizeof(Buffer)) && (Buffer[cpt] != '/'))
-                {
-                    cpt++;
-                }
-                cpt++;//passer le 'x'
-                float nbx, nby;
-                char tmpx[24];
-                memset(tmpx, '\0', sizeof(tmpx));
-                char tmpy[24];
-                memset(tmpy, '\0', sizeof(tmpy));
-                int tmpIndex = cpt;
-                while((cpt < sizeof(Buffer)) && (Buffer[cpt] != 'y'))
-                {
-                    tmpx[cpt-tmpIndex] = Buffer[tmpIndex];
-                    cpt++;
-                }
-                sscanf(tmpx, "%f", &nbx);
-                cpt++; //passer le 'y'
-                tmpIndex = cpt;
-                while((cpt < sizeof(Buffer)) && (Buffer[cpt] != '/'))
-                {
-                    tmpy[cpt-tmpIndex] = Buffer[cpt];
-                    cpt++;
-                }
-                sscanf(tmpy, "%f", &nby);
-                tmp->x = nbx;
-                tmp->y = nby;
-
-                tmp = tmp->next;*/
-
-            }
-            /*char scores[(game->nbPlayers+1)*24];
-            memset(scores, '_', sizeof(scores));
-            cpt = 0;
-            int j;
-            scores[0] = 'U';
-            scores[1] = 'P';
-            scores[2] = 'D';
-            scores[3] = 'A';
-            scores[4] = 'T';
-            scores[5] = 'E';
-            scores[6] = '/';
-            char nbPlay[(int)floor(log10((double)game->nbPlayers))+1];
-            memset(nbPlay, '_', sizeof(nbPlay));
-            sprintf(nbPlay, "%d", game->nbPlayers);
-            int l=0;
-            while(l<sizeof(nbPlay))
-            {
-                scores[7+l]=nbPlay[l];
-                l++;
-            }
-            scores[7+l] = '/';
-
-            char x[5];
-            memset(x, '\0', sizeof(x));
-            char y[5];
-            memset(y, '\0', sizeof(y));
-            if(game->players != NULL){
-                i=1;
-                Player * tmpPlayer = game->players;
-                while(tmpPlayer != NULL){
-                    j=0;
-                    while(tmpPlayer->name[j]!='/')
-                    {
-                        scores[(i*24)+j] = tmpPlayer->name[j];
-                        j++;
-                    }
-                    scores[(i*24)+j] = 'X';
-                    j++;
-                    sprintf(x, "%f", tmpPlayer->x);
-                    for(int k=0; k<sizeof(x);k++)
-                    {
-                        scores[(i*24)+j] = x[k];
-                    j++;
-                    }
-                    scores[(i*24)+j] = 'Y';
-                    j++;
-                    sprintf(y, "%f", tmpPlayer->y);
-                    for(int k=0; k<sizeof(y);k++)
-                    {
-                        scores[(i*24)+j] = y[k];
-                    j++;
-                    }
-                    scores[(i*24)+j] = '|';
-                    tmpPlayer = tmpPlayer->next;
-                    i++;
-                }
-            }
-            if(game->players != NULL){
-                Player * tmp = game->players;
-                while(tmp != NULL){
-                    retval1 = send(tmp->sock, scores, sizeof(scores), 0);
-                    if (retval1 == SOCKET_ERROR)
-                    {
-                         fprintf(stderr,"Server: send() failed: error %d\n", WSAGetLastError());
-                    }
-                    else
-                         printf("Server: send() is OK IN UPDATE.\n");
-                    tmp = tmp->next;
-                }
-            }*/
             doOnce = 0;
         }
     }
@@ -632,8 +504,6 @@ void socketsListen(void * args)
         newrc->y = ((float)rand()/(float)(RAND_MAX))*MAP_SIZE;
         newrc->next = rc;
         rc = newrc;
-
-        printf("elapsed time : %d\n", (clock()-start)/ CLOCKS_PER_SEC);
         fromlen =sizeof(from);
         msgsock = accept(listen_socket, (struct sockaddr*)&from, &fromlen);
         if (msgsock == INVALID_SOCKET)
@@ -644,13 +514,10 @@ void socketsListen(void * args)
         }
        else
        {
-          printf("Server: accept() is OK.\n");
           clock_t start = clock();
           add(msgsock, player_list);
-
           pthread_create (& th, NULL,ecoute, (void*)msgsock);
           add_t(th, th_list);
-          printf("Server: accepted connection from %s, port %d\n", inet_ntoa(from.sin_addr), htons(from.sin_port)) ;
           printf("player count : %d\n", size(player_list));
        }
     }
@@ -689,14 +556,11 @@ int main(int argc, char **argv)
         WSACleanup();
         return -1;
     }
-    else
-        printf("Server: WSAStartup() is OK.\n");
     local.sin_family = AF_INET;
     local.sin_addr.s_addr = (!ip_address) ? INADDR_ANY:inet_addr(ip_address);
 
     /* Port MUST be in Network Byte Order */
     local.sin_port = htons(port);
-
 
     // TCP socket
     listen_socket = socket(AF_INET, socket_type,0);
@@ -706,204 +570,59 @@ int main(int argc, char **argv)
         WSACleanup();
         return -1;
     }
-    else
-       printf("Server: socket() is OK.\n");
 
-
-
-    // bind() associates a local address and port combination with the socket just created.
-
-    // This is most useful when the application is a
-
-    // server that has a well-known port that clients know about in advance.
     if (bind(listen_socket, (struct sockaddr*)&local, sizeof(local)) == SOCKET_ERROR)
        {
         fprintf(stderr,"Server: bind() failed with error %d\n", WSAGetLastError());
         WSACleanup();
         return -1;
     }
-    else
-        printf("Server: bind() is OK.\n");
 
-     // So far, everything we did was applicable to TCP as well as UDP.
-
-     // However, there are certain steps that do not work when the server is
-
-     // using UDP. We cannot listen() on a UDP socket.
     if (listen(listen_socket,5) == SOCKET_ERROR)
           {
         fprintf(stderr,"Server: listen() failed with error %d\n", WSAGetLastError());
         WSACleanup();
         return -1;
     }
-   else
-        printf("Server: listen() is OK.\n");
 
-    printf("Server: I'm listening and waiting connection\non port %d, protocol %s\n", port, (socket_type == SOCK_STREAM)?"TCP":"UDP");
-    // accept() doesn't make sense on UDP, since we do not listen()
-        fromlen =sizeof(from);
-        msgsock = accept(listen_socket, (struct sockaddr*)&from, &fromlen);
-        if (msgsock == INVALID_SOCKET)
-        {
-            fprintf(stderr,"Server: accept() error %d\n", WSAGetLastError());
-            WSACleanup();
-            return -1;
+    fromlen =sizeof(from);
+    msgsock = accept(listen_socket, (struct sockaddr*)&from, &fromlen);
+    if (msgsock == INVALID_SOCKET)
+    {
+        fprintf(stderr,"Server: accept() error %d\n", WSAGetLastError());
+        WSACleanup();
+        return -1;
+    }
+
+    start = clock();
+    add(msgsock, player_list);
+    pthread_create (& th, NULL,ecoute, (void*)msgsock);
+    add_t(th, th_list);
+    printf("starting countdown...");
+    pthread_create (& th, NULL,socketsListen, (void*)listen_socket);
+    while((clock()-start)/CLOCKS_PER_SEC < 5 ){
+        Sleep(1000);
+    }
+    pthread_create (& th, NULL,sendUpdates, NULL);
+    printf("game starting ...") ;
+    printf("player count : %d\n", size(player_list));
+    if(player_list->head != NULL){
+        Node * tmp = player_list->head;
+        while(tmp != NULL){
+            pthread_create (& th, NULL,messageStart, (void*)tmp->data);
+            tmp = tmp->next;
         }
-        else
-        {
-            printf("Server: accept() is OK.\n");
-            printf("Server: accepted connection from %s, port %d\n", inet_ntoa(from.sin_addr), htons(from.sin_port)) ;
+    }
+    phase = 1;
+
+    if(th_list->head != NULL){
+        Node_t * tmp_t = th_list->head;
+        while(tmp_t != NULL){
+            pthread_join (tmp_t->data, NULL);
+            tmp_t = tmp_t->next;
         }
+    }
 
-        start = clock();
-        add(msgsock, player_list);
-        pthread_create (& th, NULL,ecoute, (void*)msgsock);
-        add_t(th, th_list);
-        printf("starting countdown...");
-        printf("start time : %d\n", start/ CLOCKS_PER_SEC);
-        pthread_create (& th, NULL,socketsListen, (void*)listen_socket);
-        while((clock()-start)/CLOCKS_PER_SEC < 5 ){
-            Sleep(1000);
-        }
-        pthread_create (& th, NULL,sendUpdates, NULL);
-        printf("game starting ...") ;
-        printf("player count : %d\n", size(player_list));
-        if(player_list->head != NULL){
-            Node * tmp = player_list->head;
-            while(tmp != NULL){
-                pthread_create (& th, NULL,messageStart, (void*)tmp->data);
-                tmp = tmp->next;
-            }
-        }
-        phase = 1;
-
-        if(th_list->head != NULL){
-            Node_t * tmp_t = th_list->head;
-            while(tmp_t != NULL){
-                pthread_join (tmp_t->data, NULL);
-                tmp_t = tmp_t->next;
-            }
-        }
-
-
-       /*
-       while(1)
-
-       {
-
-        //possibilité d'accepter de nouvelles connexions pendant 20 secs
-
-        memset(Buffer, '\0', sizeof(Buffer));
-
-        // In the case of SOCK_STREAM, the server can do recv() and send() on
-
-        // the accepted socket and then close it.
-
-        // However, for SOCK_DGRAM (UDP), the server will do recvfrom() and sendto()  in a loop.
-
-        if (socket_type != SOCK_DGRAM)
-
-            retval = recv(msgsock, Buffer, sizeof(Buffer), 0);
-
-
-
-       else
-
-       {
-
-            retval = recvfrom(msgsock,Buffer, sizeof(Buffer), 0, (struct sockaddr *)&from, &fromlen);
-
-            printf("Server: Received datagram from %s\n", inet_ntoa(from.sin_addr));
-
-        }
-
-
-
-        if (retval == SOCKET_ERROR)
-
-              {
-
-            fprintf(stderr,"Server: recv() failed: error %d\n", WSAGetLastError());
-
-            closesocket(msgsock);
-
-            continue;
-
-        }
-
-       else
-
-            printf("Server: recv() is OK.\n");
-
-
-
-        if (retval == 0)
-
-              {
-
-            printf("Server: Client closed connection.\n");
-
-            closesocket(msgsock);
-
-            continue;
-
-        }
-        Buffer[strlen(Buffer) - 1] = '\0';
-        for(int j = 0; j < sizeof(Buffer) ; j++){
-            if(Buffer[j] == '\n')
-                Buffer[j] = '\0';
-            else
-                Buffer[j] = toupper(Buffer[j]);
-}
-        printf("Server: Received %d bytes, data \"%s\" from client, buff size : %d \n", retval, Buffer,sizeof(Buffer));
-
-
-        printf("Server: Echoing the same data back to client...\n");
-
-        if (socket_type != SOCK_DGRAM)
-
-            retval1 = send(msgsock, Buffer, retval, 0);
-
-        else
-
-            retval1 = sendto(msgsock, Buffer, sizeof(Buffer), 0, (struct sockaddr *)&from, fromlen);
-
-
-
-              if (retval1 == SOCKET_ERROR)
-
-              {
-
-                     fprintf(stderr,"Server: send() failed: error %d\n", WSAGetLastError());
-
-               }
-
-              else
-
-                     printf("Server: send() is OK.\n");
-
-
-
-        /*if (socket_type != SOCK_DGRAM)
-
-       {
-
-            printf("Server: I'm waiting more connection, try running the client\n");
-
-            printf("Server: program from the same computer or other computer...\n");
-
-            closesocket(msgsock);
-
-        }
-
-        else
-
-            printf("Server: UDP server looping back for more requests\n");
-
-        continue;*//*
-
-    }*/
-
-       return 0;
+    return 0;
 
 }
