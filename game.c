@@ -2,51 +2,37 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <winsock2.h>
 #include "game.h"
 #define MAP_SIZE 50
 
-struct player {
-  char * name;
-  float dir, x, y, vx, vy;
-  int score;
-  struct player * next;
-};
 
-struct objectif {
-  float x, y;
-};
 
-struct game {
-  Player * players;
-  Objectif * obj;
-  int x, y;
-};
-
-Player * makePlayer(char * n)
+Player * makePlayer(char * n, SOCKET s, float x, float y)
 {
-  srand(time(NULL));
   Player * newPlayer = malloc(sizeof(Player));
   if (!newPlayer)
     return NULL;
   newPlayer->name = n;
   newPlayer->dir = 0;
-  newPlayer->x = rand()/RAND_MAX*MAP_SIZE;
-  newPlayer->y = rand()/RAND_MAX*MAP_SIZE;
+  newPlayer->x = x;
+  newPlayer->y = y;
   newPlayer->vx = 0;
   newPlayer->vy = 0;
+  newPlayer->sock = s;
   newPlayer->next = NULL;
-  newPlayer->score = 0;
+  newPlayer->score = 2;
   return newPlayer;
 }
 
-Objectif * makeObjectif()
+Objectif * makeObjectif(float xrand, float yrand)
 {
-  srand(time(NULL));
+
   Objectif * newObj = malloc(sizeof(Objectif));
   if (!newObj)
     return NULL;
-  newObj->x = rand()/RAND_MAX*MAP_SIZE;
-  newObj->y = rand()/RAND_MAX*MAP_SIZE;
+  newObj->x = xrand;
+  newObj->y = yrand;
   return newObj;
 }
 
@@ -59,12 +45,17 @@ Game * makeGame()
   newGame->y = MAP_SIZE;
   newGame->players = NULL;
   newGame->obj = NULL;
+  newGame->nbPlayers = 0;
   return newGame;
 }
 
 void addPlayer(Game * game, Player * player)
 {
+    if(player == NULL){
+        printf("ERROR : player null in addPLayer\n");
+    }
   if(game->players == NULL){
+    printf("adding player");
     game->players = player;
   }else{
     Player * tmp = game->players;
@@ -72,9 +63,5 @@ void addPlayer(Game * game, Player * player)
       tmp = tmp->next;
     tmp->next = player;
   }
-}
-
-void setObjectif(Game * game )
-{
-  game->obj = makeObjectif();
+  game->nbPlayers++;
 }

@@ -1,28 +1,30 @@
 # depslib dependency file v1.0
-1553655728 source:d:\tomcat\apache-tomcat-7.0.90\webapps\server_en_c\main.c
+1554257860 source:d:\tomcat\apache-tomcat-7.0.90\webapps\server_en_c\main.c
 	<winsock2.h>
 	<windows.h>
 	<pthread.h>
 	<stdlib.h>
 	<stdio.h>
 	<time.h>
+	<time.h>
+	<math.h>
 	<unistd.h>
 	<string.h>
 	"linked_list.h"
 	"thread_list.h"
 	"game.h"
 
-1553651127 d:\tomcat\apache-tomcat-7.0.90\webapps\server_en_c\linked_list.h
+1553654727 d:\tomcat\apache-tomcat-7.0.90\webapps\server_en_c\linked_list.h
 
-1553651141 source:d:\tomcat\apache-tomcat-7.0.90\webapps\server_en_c\linked_list.c
+1553654741 source:d:\tomcat\apache-tomcat-7.0.90\webapps\server_en_c\linked_list.c
 	<stdio.h>
 	<stdlib.h>
 	<winsock2.h>
 	"linked_list.h"
 
-1553651251 d:\tomcat\apache-tomcat-7.0.90\webapps\server_en_c\thread_list.h
+1553654851 d:\tomcat\apache-tomcat-7.0.90\webapps\server_en_c\thread_list.h
 
-1553651239 source:d:\tomcat\apache-tomcat-7.0.90\webapps\server_en_c\thread_list.c
+1553654839 source:d:\tomcat\apache-tomcat-7.0.90\webapps\server_en_c\thread_list.c
 	<stdio.h>
 	<stdlib.h>
 	<winsock2.h>
@@ -92,10 +94,10 @@
 1023178168 source:d:\tomcat\apache-tomcat-7.0.90\webapps\server_en_c\ft_v1.0\src\threadlist.c
 	"fthread_internal.h"
 
-1023178168 source:d:\tomcat\apache-tomcat-7.0.90\webapps\server_en_c\automaton.c
+1023181768 source:d:\tomcat\apache-tomcat-7.0.90\webapps\server_en_c\automaton.c
 	"fthread_internal.h"
 
-1023178168 d:\tomcat\apache-tomcat-7.0.90\webapps\server_en_c\fthread_internal.h
+1023181768 d:\tomcat\apache-tomcat-7.0.90\webapps\server_en_c\fthread_internal.h
 	<stdio.h>
 	<stdlib.h>
 	"fthread.h"
@@ -109,58 +111,59 @@
 	"verify.h"
 	"trace.h"
 
-1023178168 d:\tomcat\apache-tomcat-7.0.90\webapps\server_en_c\fthread.h
+1023181768 d:\tomcat\apache-tomcat-7.0.90\webapps\server_en_c\fthread.h
 	<pthread.h>
 
-1023178168 d:\tomcat\apache-tomcat-7.0.90\webapps\server_en_c\threadlist.h
+1023181768 d:\tomcat\apache-tomcat-7.0.90\webapps\server_en_c\threadlist.h
 
-1023178168 d:\tomcat\apache-tomcat-7.0.90\webapps\server_en_c\locklist.h
+1023181768 d:\tomcat\apache-tomcat-7.0.90\webapps\server_en_c\locklist.h
 
-1023178168 d:\tomcat\apache-tomcat-7.0.90\webapps\server_en_c\broadcastlist.h
+1023181768 d:\tomcat\apache-tomcat-7.0.90\webapps\server_en_c\broadcastlist.h
 
-1023178168 d:\tomcat\apache-tomcat-7.0.90\webapps\server_en_c\environment.h
+1023181768 d:\tomcat\apache-tomcat-7.0.90\webapps\server_en_c\environment.h
 
-1023178168 d:\tomcat\apache-tomcat-7.0.90\webapps\server_en_c\thread.h
+1023181768 d:\tomcat\apache-tomcat-7.0.90\webapps\server_en_c\thread.h
 
-1023178168 d:\tomcat\apache-tomcat-7.0.90\webapps\server_en_c\event.h
+1023181768 d:\tomcat\apache-tomcat-7.0.90\webapps\server_en_c\event.h
 
-1023178168 d:\tomcat\apache-tomcat-7.0.90\webapps\server_en_c\scheduler.h
+1023181768 d:\tomcat\apache-tomcat-7.0.90\webapps\server_en_c\scheduler.h
 
-1023178168 d:\tomcat\apache-tomcat-7.0.90\webapps\server_en_c\verify.h
+1023181768 d:\tomcat\apache-tomcat-7.0.90\webapps\server_en_c\verify.h
 
-1023178168 d:\tomcat\apache-tomcat-7.0.90\webapps\server_en_c\trace.h
+1023181768 d:\tomcat\apache-tomcat-7.0.90\webapps\server_en_c\trace.h
 
-1023178168 source:d:\tomcat\apache-tomcat-7.0.90\webapps\server_en_c\broadcastlist.c
+1023181768 source:d:\tomcat\apache-tomcat-7.0.90\webapps\server_en_c\broadcastlist.c
 	"fthread_internal.h"
 
-1023178168 source:d:\tomcat\apache-tomcat-7.0.90\webapps\server_en_c\environment.c
+1023181768 source:d:\tomcat\apache-tomcat-7.0.90\webapps\server_en_c\environment.c
 	"fthread_internal.h"
 
-1023178168 source:d:\tomcat\apache-tomcat-7.0.90\webapps\server_en_c\event.c
+1023181768 source:d:\tomcat\apache-tomcat-7.0.90\webapps\server_en_c\event.c
 	"fthread_internal.h"
 
-1023178168 source:d:\tomcat\apache-tomcat-7.0.90\webapps\server_en_c\instruction.c
+1023181768 source:d:\tomcat\apache-tomcat-7.0.90\webapps\server_en_c\instruction.c
 	"fthread_internal.h"
 
-1023178168 source:d:\tomcat\apache-tomcat-7.0.90\webapps\server_en_c\locklist.c
+1023181768 source:d:\tomcat\apache-tomcat-7.0.90\webapps\server_en_c\locklist.c
 	"fthread_internal.h"
 
-1023178168 source:d:\tomcat\apache-tomcat-7.0.90\webapps\server_en_c\scheduler.c
+1023181768 source:d:\tomcat\apache-tomcat-7.0.90\webapps\server_en_c\scheduler.c
 	"fthread_internal.h"
 	<sched.h>
 
-1023178168 source:d:\tomcat\apache-tomcat-7.0.90\webapps\server_en_c\thread.c
+1023181768 source:d:\tomcat\apache-tomcat-7.0.90\webapps\server_en_c\thread.c
 	"fthread_internal.h"
 
-1023178168 source:d:\tomcat\apache-tomcat-7.0.90\webapps\server_en_c\threadlist.c
+1023181768 source:d:\tomcat\apache-tomcat-7.0.90\webapps\server_en_c\threadlist.c
 	"fthread_internal.h"
 
-1553647932 source:d:\tomcat\apache-tomcat-7.0.90\webapps\server_en_c\game.c
+1554242358 source:d:\tomcat\apache-tomcat-7.0.90\webapps\server_en_c\game.c
 	<stdio.h>
 	<stdlib.h>
 	<string.h>
 	<time.h>
+	<winsock2.h>
 	"game.h"
 
-1553647817 d:\tomcat\apache-tomcat-7.0.90\webapps\server_en_c\game.h
+1554242363 d:\tomcat\apache-tomcat-7.0.90\webapps\server_en_c\game.h
 
