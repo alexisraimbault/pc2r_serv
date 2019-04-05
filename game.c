@@ -3,12 +3,13 @@
 #include <string.h>
 #include <time.h>
 #include <winsock2.h>
+#include <pthread.h>
 #include "game.h"
 #define MAP_SIZE 50
 
 
 
-Player * makePlayer(char * n, SOCKET s, float x, float y)
+Player * makePlayer(char * n, SOCKET s, float x, float y, int number)
 {
   Player * newPlayer = malloc(sizeof(Player));
   if (!newPlayer)
@@ -19,7 +20,10 @@ Player * makePlayer(char * n, SOCKET s, float x, float y)
   newPlayer->y = y;
   newPlayer->vx = 0;
   newPlayer->vy = 0;
+  newPlayer->wait = 0;
+  newPlayer->mut = pthread_mutex_init(&newPlayer->mut, NULL);
   newPlayer->sock = s;
+  newPlayer->num = number;
   newPlayer->next = NULL;
   newPlayer->score = 2;
   return newPlayer;
